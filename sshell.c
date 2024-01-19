@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-//test change
+
 //define the max size of the command line, usually when you run any kind of c program it runs its own terminal 
 // returns with some value and exits 
 #define CMDLINE_MAX 512
@@ -17,16 +17,18 @@
 int main(void)
 {
         char cmd[CMDLINE_MAX];
-        char* args[MAX_ARGS];
-        // need to dynamically allocate 2d array to avoid warning about type in execv
-        // it exepcts a const char* [] which making args[X][Y] does not do
-        for(int i = 0; i < MAX_ARGS; i++) {
-                args[i] = malloc(sizeof(char)*MAX_TOKEN_LENGTH);
-        }
+        
         // we don't just want one command
         while (1) {
+                char** args;
+                // need to dynamically allocate 2d array to avoid warning about type in execv
+                // it exepcts a const char* [] which making args[X][Y] does not do
+                args =  malloc(MAX_ARGS*sizeof(char*));
+                for(int i = 0; i < MAX_ARGS; i++) {
+                        args[i] = malloc(MAX_TOKEN_LENGTH*sizeof(char));
+                }
                 char *nl;
-                int retval;
+                //int retval;
 
                 /* Print prompt */
                 printf("sshell$ ");
@@ -97,12 +99,13 @@ int main(void)
 
                 /* Regular command - this is where we start working on the program, implementing the system */
                 //retval = system(cmd);
+                // free dynamically allocated memory
+                for(int i = 0; i < MAX_ARGS; i++) {
+                        free(args[i]);
+                }
+                free(args);
                 
         }
-        // free dynamically allocated memory
-        for(int i = 0; i < MAX_ARGS; i++) {
-                free(args[i]);
-        }
-
+        
         return EXIT_SUCCESS;
 }
