@@ -14,6 +14,8 @@
 // we can already use special commands and execute external programs. 
 //get familiar with: standard c library for pipe, execlp, fork, waitpid, 
 
+
+
 int main(void)
 {
         char cmd[CMDLINE_MAX];
@@ -23,9 +25,9 @@ int main(void)
                 char** args;
                 // need to dynamically allocate 2d array to avoid warning about type in execv
                 // it exepcts a const char* [] which making args[X][Y] does not do
-                args =  malloc(MAX_ARGS*sizeof(char*));
+                args =  malloc(MAX_ARGS*sizeof(char*)); // allocate array
                 for(int i = 0; i < MAX_ARGS; i++) {
-                        args[i] = malloc(MAX_TOKEN_LENGTH*sizeof(char));
+                        args[i] = malloc(MAX_TOKEN_LENGTH*sizeof(char)); //allocate each string in array
                 }
                 char *nl;
                 //int retval;
@@ -37,6 +39,8 @@ int main(void)
 
                 /* Get command line */
                 fgets(cmd, CMDLINE_MAX, stdin);
+
+                
 
                 /* Print command line if stdin is not provided by terminal */
                 if (!isatty(STDIN_FILENO)) {
