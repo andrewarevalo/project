@@ -148,17 +148,10 @@ int main(void) {
     /* Print prompt */
     printf("sshell$ ");
     fflush(stdout);
-    // type in characters, waits for the buffer to be filled or \n. so We want
-    // to print the prompt and we want the buffer for stdout to be empty
-    // usually matters when taking input, so when taking input, we want the
-    // buffer to be empty when you type on a keyboard, out input is stored in a
-    // buffer until something needs it. fflush clears that buffer out in case
-    // that anything is extraneous there.
-
+   
     /* Get command line */
     fgets(cmd, CMDLINE_MAX, stdin);
-    // gets input from the specified input buffer. In this case, stdin which is the keyboard
-    // whatever is copied from the buffer gets put into the cmd.
+   
 
     /* Print command line if stdin is not provided by terminal */
     if (!isatty(STDIN_FILENO)) {
@@ -171,8 +164,7 @@ int main(void) {
     if (nl)
       *nl = '\0'; // finds the position of the newline character and sets it to null. Should be the last character of the command
     
-    // make a copy for printing after the command is done that is not modified by strtok
-    //any spaces that are extra at the end will be gotten rid of
+    
     int end = strlen(cmd) - 1;
     while(cmd[end] == ' '){
       cmd[end] = '\0';
@@ -337,7 +329,7 @@ int main(void) {
               break;
             }
           }else{
-            currentOut = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);//instead of delelting contents we append
+            currentOut = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
             if(currentOut == -1){
               fprintf(stderr, "Error: cannot open output file\n");
               deleteList(head);
@@ -349,12 +341,9 @@ int main(void) {
           currentOut = STDOUT_FILENO; 
         }
       }else{
-        pipe(pipes); // provides the pipes to connect programs together. 
-        currentOut = pipes[1]; // 1 is write end of the pipe, so when we get here we are saying that the fd for currentOut is the write part of pipe.
-      }//^choosing which output will be used and putting it into currentOut. i.e screen, file or pipe
-      //connect new pipes and clean up old pipes. 
-      //call fork here because we need to set up the pipes to connect the process. The pipes that connect the processes have to be created befoe fork
-      // because otherwise the processe screated by fork won't know about the pipes so won't be able to talk to each other
+        pipe(pipes); 
+        currentOut = pipes[1]; 
+      }
       current->pid = fork();
       if (current->pid == 0) {
         /* Child */
@@ -383,41 +372,30 @@ int main(void) {
         if (currentOut != STDOUT_FILENO) { 
             close(currentOut); //don't want parent to hold onto it. close the write end of the pipe for the parent
         }
-        //pid is the most recently executed program
-        //keeping track of the most recent pid. 
-        //keep the last pid to waitpid on the last program later. 
-
+       
         if(currentIn != 0){
           close(currentIn);
         } // parent has a copy of the file descriptor that it doesn't need, if currentIn = stdin, don't close it else it should close
 
-        //when creating the pipes between the two commands, we don't want to change the current in until we reach the next command. 
-        //this command's output will be the next command's input.
-        //setting up the next program so that it read from the read part of pipes. 
+        
         current = current->next; // move onto next process, traverse linked list, iterate. 
         currentIn = pipes[0]; // force the next program's input to be read from the pipe of the program that just ran. This pipe belongs to the program above. 
       }
     } // executed the full command line, including piping and redirection
           
-    //once here all programs have been started
-    // head is set to null above if there was an error when trying to open the output file, which would have resulted in aborting trying to run the commands
-    // so don't need to do anythig else, just start the while(1) loop back over
+   
     if(head == NULL){
       //none of this code below has any meaning if head == NULL
       continue;
     }
     
-    //so we wait for the last program to finish.
-    // have to wait for the last process first, so we know everything is done executing. 
-    // restarting back to the head of the linked list, to collect status information for all the processes ran. 
+    
     current = head;
-    //update the status of each program, after the last program has finished. 
+    
 
     while(current != NULL){
       //waiting or not waiting for a program to end. 
-      //always wait for the last program in the chain to finish. 
-      //waitpid gives us the statuses, the return values of the program. 
-      //waiting for all other processes to finish. 
+       
       waitpid(current->pid, &(current->status), 0);
 
       current = current->next;
@@ -425,8 +403,7 @@ int main(void) {
     fprintf(stderr, " completed '%s'", cmd_copy);
     current = head;
     // since the status of the last process is saved in 'status' not in the linked list
-    // print everything except the last process status out of th elinked list, then
-    // print status on its own
+
     while(current != NULL){
       fprintf(stderr, "[%d]", WEXITSTATUS(current->status));
       current = current->next;
