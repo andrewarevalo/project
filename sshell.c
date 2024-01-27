@@ -129,7 +129,7 @@ void pwd(){
   char cwd[CMDLINE_MAX]; 
   getcwd(cwd, sizeof(cwd)); // get the current working directory
   printf("%s\n", cwd);
-  printf("+ completed 'pwd' [0]\n");
+  fprintf(stderr, "+ completed 'pwd' [0]\n");
 
 }
 
@@ -268,6 +268,7 @@ int main(void) {
     if(strcmp(head->args[0], "pwd") == 0){
       pwd();
       deleteList(head);
+
       head = NULL;
       continue;
     }
@@ -284,7 +285,10 @@ int main(void) {
         if (stat(pdirent->d_name, &results) < 0) {
           printf("stat error\n");
         }
-        printf("%s (%ld bytes)\n", pdirent->d_name, results.st_size);
+        if(strcmp(pdirent->d_name, ".") != 0 && strcmp(pdirent->d_name, "..")){
+          printf("%s (%ld bytes)\n", pdirent->d_name, results.st_size);
+        }
+        
       }
       closedir(pdir); // close when done
       continue;
@@ -301,10 +305,10 @@ int main(void) {
         // get the name of the directory
       char *pdir_name = head->args[1];
       if (chdir(pdir_name) < 0) {
-        printf("Error: cannot cd into directory\n");
+        fprintf(stderr, "Error: cannot cd into directory\n");
         status = 1;
       }
-      printf("+ completed '%s' [%d]\n", cmd_copy, status);
+      fprintf(stderr, "+ completed '%s' [%d]\n", cmd_copy, status);
       deleteList(head);
       head = NULL;
       continue;
@@ -418,7 +422,7 @@ int main(void) {
 
       current = current->next;
     }
-    fprintf(stderr, "* completed '%s'", cmd_copy);
+    fprintf(stderr, " completed '%s'", cmd_copy);
     current = head;
     // since the status of the last process is saved in 'status' not in the linked list
     // print everything except the last process status out of th elinked list, then
